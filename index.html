@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guess The Number</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #141e30, #243b55);
+        }
+
+        .game {
+            width: 400px;
+            padding: 35px;
+            text-align: center;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+            color: white;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #ddd;
+            margin-bottom: 25px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            text-align: center;
+            outline: none;
+            margin-bottom: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background: #00c6ff;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.03);
+            background: #0072ff;
+        }
+
+        #message {
+            margin-top: 25px;
+            font-size: 20px;
+            min-height: 30px;
+        }
+
+        .attempts {
+            margin-top: 15px;
+            font-size: 17px;
+            color: #ddd;
+        }
+
+        #newGame {
+            margin-top: 15px;
+            background: #28a745;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="game">
+
+        <h1>🎯 Guess The Number</h1>
+
+        <p class="subtitle">
+            Guess a number between 1 and 100
+        </p>
+
+        <input
+            type="number"
+            id="guess"
+            placeholder="Enter your guess"
+            min="1"
+            max="100"
+        >
+
+        <button onclick="checkGuess()">
+            Guess
+        </button>
+
+        <div id="message"></div>
+
+        <div class="attempts">
+            Attempts: <span id="attempts">0</span>
+        </div>
+
+        <button id="newGame" onclick="newGame()">
+            🔄 New Game
+        </button>
+
+    </div>
+
+    <script>
+
+        let number;
+        let attempts = 0;
+
+        // Start game
+        function newGame() {
+            number = Math.floor(Math.random() * 100) + 1;
+            attempts = 0;
+
+            document.getElementById("attempts").textContent = attempts;
+            document.getElementById("message").textContent = "";
+
+            document.getElementById("guess").value = "";
+            document.getElementById("guess").disabled = false;
+
+            document.querySelector("button").disabled = false;
+
+            document.getElementById("newGame").style.display = "none";
+        }
+
+        // Beep sound
+        function beep() {
+            const audioContext =
+                new (window.AudioContext || window.webkitAudioContext)();
+
+            const oscillator = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+
+            oscillator.frequency.value = 800;
+            oscillator.type = "sine";
+
+            oscillator.connect(gain);
+            gain.connect(audioContext.destination);
+
+            oscillator.start();
+
+            setTimeout(() => {
+                oscillator.stop();
+                audioContext.close();
+            }, 300);
+        }
+
+        // Voice
+        function speak(text) {
+            const speech = new SpeechSynthesisUtterance(text);
+
+            speech.rate = 0.9;
+            speech.pitch = 1.1;
+            speech.volume = 1;
+
+            // Try to use a female voice
+            const voices = speechSynthesis.getVoices();
+
+            const femaleVoice = voices.find(voice =>
+                /female|zira|samantha|victoria|karen/i
+                .test(voice.name)
+            );
+
+            if (femaleVoice) {
+                speech.voice = femaleVoice;
+            }
+
+            speechSynthesis.speak(speech);
+        }
+
+        // Check guess
+        function checkGuess() {
+
+            const guess = Number(
+                document.getElementById("guess").value
+            );
+
+            if (!guess || guess < 1 || guess > 100) {
+                document.getElementById("message").textContent =
+                    "⚠️ Enter a number from 1 to 100";
+                return;
+            }
+
+            attempts++;
+
+            document.getElementById("attempts").textContent = attempts;
+
+            if (guess > number) {
+
+                document.getElementById("message").textContent =
+                    "📈 Your guess is higher!";
+
+                beep();
+
+            }
+
+            else if (guess < number) {
+
+                document.getElementById("message").textContent =
+                    "📉 Your guess is lower!";
+
+                beep();
+
+            }
+
+            else {
+
+                document.getElementById("message").textContent =
+                    "🎉 WOW! Congratulations!";
+
+                speak(
+                    "Wow! Congratulations! You guessed it right!"
+                );
+
+                document.getElementById("guess").disabled = true;
+
+                document.querySelector(".game button").disabled = true;
+
+                document.getElementById("newGame").style.display =
+                    "block";
+            }
+        }
+
+        // Start first game
+        newGame();
+
+    </script>
+
+</body>
+</html>
